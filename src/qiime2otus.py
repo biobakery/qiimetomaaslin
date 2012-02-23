@@ -48,8 +48,10 @@ for astrLine in csv.reader( open(strInputQiime), csv.excel_tab ):
     i = strOTU.find( "." )
     if i >= 0:
       strOTU = strOTU[( i + 1 ):]
-    #Format consensus lineage?
+    #Format consensus lineage
 #    print(strConsensusLineage)
+    #Remove root #TODO is this right?
+    strConsensusLineage = re.sub(r'^Root$',c_strUnclassified,strConsensusLineage)
     #Remove root #TODO is this right?
     strConsensusLineage = re.sub(r'Root;.__',"",strConsensusLineage)
 #    print(strConsensusLineage)
