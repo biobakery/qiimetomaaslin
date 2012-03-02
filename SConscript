@@ -9,6 +9,7 @@ c_strSufPCL		= ".pcl"
 c_strSufR		= ".R"
 c_strSufQiime		= ".qiime"
 c_strSufOTU		= ".otu"
+c_strSufAbnd		= ".abnd"
 
 #Delims
 cPathDelim = "/"
@@ -17,7 +18,8 @@ cExtDelim = "."
 #Scripts
 #Renames the otus with the ancestry so that clades can be later summed.
 progRenameOTUs = sfle.d( fileDirSrc, "qiime2otus.py")
-progSumClades = sfle.d( fileDirSrc, "otus2pcl.py")
+progSumClades = sfle.d( fileDirSrc, "otus2abnd.py")
+progNormalize = sfle.d( fileDirSrc, "abnd2pcl.py")
 
 pE = DefaultEnvironment( )
 
@@ -44,11 +46,15 @@ for fileQiime in lQiimeFiles:
   strInputBase = cExtDelim.join(strPathPieces[0:-1])
   strOutputBase = sfle.d(fileDirOutput,[filter(None,strOutputPiece) for strOutputPiece in strInputBase.split(cPathDelim)][-1])
   strUpdateNameOutputFile = File(strOutputBase+c_strSufOTU)
-  strCountCladeOutputFile = File(strOutputBase+c_strSufPCL)
+  strCountCladeOutputFile = File(strOutputBase+c_strSufAbnd)
+  strNormalizeOuputFile = File(strOutputBase+c_strSufPCL)
 
   #Merge the first and last column of Qiime output to have a full name with consensus lineage
   Command( strUpdateNameOutputFile, [progRenameOTUs,fileQiime], funcDo )
 
   #Count clade abundances
-  Default(Command( strCountCladeOutputFile, [progSumClades,strUpdateNameOutputFile], funcDo ))
+  Command( strCountCladeOutputFile, [progSumClades,strUpdateNameOutputFile], funcDo )
+
+  #Normalize clade abundances
+  Default(Command( strNormalizeOuputFile, [progSumClades,strCountCladeOutputFile], funcDo ))
   

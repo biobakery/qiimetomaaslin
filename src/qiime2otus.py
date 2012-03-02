@@ -6,7 +6,6 @@ import re
 import sys
 
 c_CapMemoryUse		= 10,000 #lines of data that will be saved between sending data to the file
-c_dUnclassified		= 0.8
 c_strUnclassified	= "unclassified"
 c_strOTUID		= "#OTU ID"
 c_cOutputOTULineageDelim = "|"
@@ -15,7 +14,7 @@ c_strOutputDelimiter	="\t"
 
 #Check for arg count
 if len( sys.argv ) != 3:
-	raise Exception( "Usage: qiime2otus.py <otus.txt> <outputfile.otu>" )
+	raise Exception( "Usage: qiime2otus.py <inputfile.txt> <outputfile.otu>" )
 strInputQiime = sys.argv[1]
 strOutputName = sys.argv[2]
 
@@ -49,18 +48,14 @@ for astrLine in csv.reader( open(strInputQiime), csv.excel_tab ):
     if i >= 0:
       strOTU = strOTU[( i + 1 ):]
     #Format consensus lineage
-#    print(strConsensusLineage)
     #Remove root #TODO is this right?
     strConsensusLineage = re.sub(r'^Root$',c_strUnclassified,strConsensusLineage)
     #Remove root #TODO is this right?
     strConsensusLineage = re.sub(r'Root;.__',"",strConsensusLineage)
-#    print(strConsensusLineage)
     #Change no end clade to unclassified #TODO is this right?
     strConsensusLineage = re.sub(r';.__$',c_cOutputOTULineageDelim+c_strUnclassified,strConsensusLineage)
-#    print(strConsensusLineage)
     #Change out delimiters #TODO is this right?
     strConsensusLineage = re.sub(r';.__',c_cOutputOTULineageDelim,strConsensusLineage)
-#    print(strConsensusLineage)
     #Combine with qiime consensus lineages
     strOTU = c_cOutputOTULineageDelim.join([strConsensusLineage,strOTU])
     lstrOutputlines.append(c_strOutputDelimiter.join([strOTU,astrData]))

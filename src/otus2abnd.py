@@ -23,8 +23,8 @@ def addVectors(liAVector,liBVector):
 
 #Check for arg count
 if len( sys.argv ) != 3:
-	raise Exception( "Usage: otus2pcl.py <otus.otu> <outputfile.pcl>" )
-strInputQiime = sys.argv[1]
+	raise Exception( "Usage: otus2abnd.py <inputfile.otu> <outputfile.abnd>" )
+strInputOTU = sys.argv[1]
 strOutputName = sys.argv[2]
 
 print("Outputing data to the file:"+strOutputName)
@@ -38,7 +38,7 @@ fhndlOutput = open(strOutputName, "w")
 dictClades = dict()
 
 #Read through tab delimited qiime output
-for astrLine in csv.reader( open(strInputQiime), csv.excel_tab ):
+for astrLine in csv.reader( open(strInputOTU), csv.excel_tab ):
   #Get otu and data per sample
   strOTU, astrData = astrLine[0], astrLine[1:len(astrLine)]
 
@@ -75,4 +75,4 @@ for strClade in dictClades:
 fhndlOutput.write("\n".join(lstrOutputlines))
 fhndlOutput.close()
 
-print("Successfully Ended Qiime2OTU")
+print("Successfully Completed otus2abnd")
