@@ -35,8 +35,9 @@ for astrLine in csv.reader( open(strInputAbnd), csv.excel_tab ):
       adSums = [0] * len( astrData )
   #If sample line has already been found, we assume we are now working with data
   elif(adSums):
-    astrData = [strCur.strip( ) for strCur in astrData]
+    adData = [float(strCur.strip( )) for strCur in astrData]
     aadData.append( adData )
+    astrIDs.append(strOTU)
     #Add to sum of data
     for i in range( len( adData ) ):
       if adData[i]:
@@ -48,10 +49,11 @@ fhndlOutput = open(strOutputName, "w")
 #Normalize each taxa per sample sum
 for iRow in range( len( astrIDs ) ):
   adData = aadData[iRow]
+
   for iCol in range( len( adSums ) ):
     if adData[iCol]:
       adData[iCol] /= adSums[iCol]
-      lstrOutputlines.append("\t".join( [astrIDs[iRow]] + [( "" if ( d == None ) else str(d) ) for d in adData] ) )
+  lstrOutputlines.append("\t".join( [astrIDs[iRow]] + [( "" if ( d == None ) else str(d) ) for d in adData] ) )
 
 #Output to file anthing not already sent to file
 fhndlOutput.write("\n".join(lstrOutputlines))

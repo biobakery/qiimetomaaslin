@@ -56,5 +56,5 @@ for fileQiime in lQiimeFiles:
   Command( strCountCladeOutputFile, [progSumClades,strUpdateNameOutputFile], funcDo )
 
   #Normalize clade abundances
-  Default(Command( strNormalizeOuputFile, [progSumClades,strCountCladeOutputFile], funcDo ))
+  Default(Command( strNormalizeOuputFile, [progNormalize,strCountCladeOutputFile], funcDo ))
   

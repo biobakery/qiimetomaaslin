@@ -33,7 +33,7 @@ fhndlOutput = open(strOutputName, "a")
 #Read through tab delimited qiime output
 for astrLine in csv.reader( open(strInputQiime), csv.excel_tab ):
   #Get otu and data
-  strOTU, astrData, strConsensusLineage = astrLine[0], astrLine[1:-2], astrLine[-1]
+  strOTU, astrData, strConsensusLineage = astrLine[0], astrLine[1:-1], astrLine[-1]
 
   #Consolidate the data
   astrData = c_strOutputDelimiter.join(astrData)
