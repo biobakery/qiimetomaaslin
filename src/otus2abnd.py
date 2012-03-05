@@ -41,9 +41,7 @@ dictClades = dict()
 for astrLine in csv.reader( open(strInputOTU), csv.excel_tab ):
   #Get otu and data per sample
   strOTU, astrData = astrLine[0], astrLine[1:len(astrLine)]
-  print("astrData")
-  print(astrLine)
-  print(astrData)
+
   #If the OTU id is found save, if data is found save, ignore other header elements
   if strOTU[0] == "#":
     if strOTU == c_strOTUID:
