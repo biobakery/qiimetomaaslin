@@ -59,4 +59,4 @@ for iRow in range( len( astrIDs ) ):
 fhndlOutput.write("\n".join(lstrOutputlines))
 fhndlOutput.close()
 
-print("Successfully Ended Abnd2pcl")
+print("Successfully Ended Abnd2pcl.")

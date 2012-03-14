@@ -48,10 +48,10 @@ for astrLine in csv.reader( open(strInputQiime), csv.excel_tab ):
     if i >= 0:
       strOTU = strOTU[( i + 1 ):]
     #Format consensus lineage
-    #Remove root #TODO is this right?
+    #Remove root
     strConsensusLineage = re.sub(r'^Root$',c_strUnclassified,strConsensusLineage)
-    #Remove root #TODO is this right?
-    strConsensusLineage = re.sub(r'Root;.__',"",strConsensusLineage)
+    #Remove root
+    strConsensusLineage = re.sub(r'^Root;.__',"",strConsensusLineage)
     #Change no end clade to unclassified #TODO is this right?
     strConsensusLineage = re.sub(r';.__$',c_cOutputOTULineageDelim+c_strUnclassified,strConsensusLineage)
     #Change out delimiters #TODO is this right?
@@ -69,4 +69,4 @@ for astrLine in csv.reader( open(strInputQiime), csv.excel_tab ):
 fhndlOutput.write("\n".join(lstrOutputlines))
 fhndlOutput.close()
 
-print("Successfully Ended Qiime2OTU")
+print("Successfully Ended Qiime2OTU.")
