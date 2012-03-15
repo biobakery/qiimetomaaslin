@@ -12,6 +12,52 @@ c_cOutputOTULineageDelim = "|"
 c_cOutputOTULineageDelimForRe = "\|"
 c_strOutputDelimiter	="\t"
 
+#Extensions
+c_strQiime1Extension = ".qiime"
+c_strQiime2Extension = ".qiime2"
+
+#Qiime Format 1
+def qiimeFormat1(strConsensusLineage):
+  #Format consensus lineage
+  #Remove root
+  strConsensusLineage = re.sub(r'^.__$',c_strUnclassified,strConsensusLineage)
+  #Remove root
+  strConsensusLineage = re.sub(r'^.__',"",strConsensusLineage)
+  #Change no end clade to unclassified
+  strConsensusLineage = re.sub(r'(;.__)+$',c_cOutputOTULineageDelim+c_strUnclassified,strConsensusLineage)
+  #Change otu delimiters
+  strConsensusLineage = re.sub(r';.__',c_cOutputOTULineageDelim,strConsensusLineage)
+  #Indicate internal unclassifieds
+  strNewLineage = ""
+  while(not strNewLineage == strConsensusLineage):
+    strNewLineage = strConsensusLineage
+    strConsensusLineage = re.sub(r'\|\|',c_cOutputOTULineageDelim+c_strUnclassified+c_cOutputOTULineageDelim,strConsensusLineage)
+  #If the consensus lineage was only an inital root make sure it is called unclassified and not blank
+  if strConsensusLineage == "":
+    strConsensusLineage = c_strUnclassified
+  return strConsensusLineage
+
+#Qiime Format 2
+def qiimeFormat2(strConsensusLineage):
+  #Format consensus lineage
+  #Remove root
+  strConsensusLineage = re.sub(r'^Root$',c_strUnclassified,strConsensusLineage)
+  #Remove root
+  strConsensusLineage = re.sub(r'^Root;.__',"",strConsensusLineage)
+  #Change no end clade to unclassified
+  strConsensusLineage = re.sub(r'(;.__)+$',c_cOutputOTULineageDelim+c_strUnclassified,strConsensusLineage)
+  #Change otu delimiters
+  strConsensusLineage = re.sub(r';.__',c_cOutputOTULineageDelim,strConsensusLineage)
+  #Indicate internal unclassifieds
+  strNewLineage = ""
+  while(not strNewLineage == strConsensusLineage):
+    strNewLineage = strConsensusLineage
+    strConsensusLineage = re.sub(r'\|\|',c_cOutputOTULineageDelim+c_strUnclassified+c_cOutputOTULineageDelim,strConsensusLineage)
+  #If the consensus lineage was only an inital root make sure it is called unclassified and not blank
+  if strConsensusLineage == "":
+    strConsensusLineage = c_strUnclassified
+  return strConsensusLineage
+
 #Check for arg count
 if len( sys.argv ) != 3:
 	raise Exception( "Usage: qiime2otus.py <inputfile.txt> <outputfile.otu>" )
@@ -26,6 +72,12 @@ lstrOutputlines = []
 #If output file exists, erase
 if os.path.exists(strOutputName):
   os.remove(strOutputName)
+
+#Get file extension
+sFileExtension = "".join([".",filter(None,strInputQiime.split("."))[-1]])
+
+#Tracks if errors occured
+sErrors = 0
 
 #Output file handle
 fhndlOutput = open(strOutputName, "a")
@@ -47,15 +99,15 @@ for astrLine in csv.reader( open(strInputQiime), csv.excel_tab ):
     i = strOTU.find( "." )
     if i >= 0:
       strOTU = strOTU[( i + 1 ):]
-    #Format consensus lineage
-    #Remove root
-    strConsensusLineage = re.sub(r'^Root$',c_strUnclassified,strConsensusLineage)
-    #Remove root
-    strConsensusLineage = re.sub(r'^Root;.__',"",strConsensusLineage)
-    #Change no end clade to unclassified #TODO is this right?
-    strConsensusLineage = re.sub(r';.__$',c_cOutputOTULineageDelim+c_strUnclassified,strConsensusLineage)
-    #Change out delimiters #TODO is this right?
-    strConsensusLineage = re.sub(r';.__',c_cOutputOTULineageDelim,strConsensusLineage)
+    #Format consensus lineage based on extension
+    if sFileExtension == c_strQiime1Extension:
+      strConsensusLineage = qiimeFormat1(strConsensusLineage)
+    elif sFileExtension == c_strQiime2Extension:
+      strConsensusLineage = qiimeFormat2(strConsensusLineage)
+    else:
+      print("Error unknown file extension:"+sFileExtension+". Was not translated.")
+      sErrors = sErrors + 1
+      break
     #Combine with qiime consensus lineages
     strOTU = c_cOutputOTULineageDelim.join([strConsensusLineage,strOTU])
     lstrOutputlines.append(c_strOutputDelimiter.join([strOTU,astrData]))
@@ -69,4 +121,7 @@ for astrLine in csv.reader( open(strInputQiime), csv.excel_tab ):
 fhndlOutput.write("\n".join(lstrOutputlines))
 fhndlOutput.close()
 
-print("Successfully Ended Qiime2OTU.")
+if sErrors:
+  print("Errors occured during Qiime2OTU.")
+else:
+  print("Successfully Ended Qiime2OTU.")

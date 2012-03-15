@@ -1,0 +1,13 @@
+# QIIME v1.4.0 OTU table											
+#OTU ID	E2005150	E2005180.1	E2005180.2	E2005250.1	E2005250.2	E2005260.1	E2005260.2	E2005450	E2005460	E2006140.1	Consensus Lineage
+1	0	0	0	0	0	0	0	0	0	0	k__Bacteria;p__Tenericutes;c__Mollicutes;o__RF39;f__;g__
+1000	5	0	0	0	0	0	0	0	0	0	k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae
+1008	86	132	15	0	0	0	0	70	6	0	k__Bacteria;p__Bacteroidetes;c__Bacteroidia;o__Bacteroidales;f__Bacteroidaceae;g__Bacteroides
+101	0	0	0	0	0	4	0	0	0	0	k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae;g__
+1010	0	0	0	0	0	0	0	0	0	0	k__Bacteria;p__Bacteroidetes;c__Bacteroidia;o__Bacteroidales;f__Prevotellaceae;g__Prevotella
+1013	0	0	0	0	0	0	0	0	0	0	k__Bacteria;p__Bacteroidetes;c__Bacteroidia;o__Bacteroidales;f__Prevotellaceae;g__Prevotella
+1023	4	0	0	0	0	0	1	1	0	0	k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae;g__Ruminococcus
+1026	0	0	0	0	0	0	2	5	0	6	k__Bacteria;p__Tenericutes;c__Erysipelotrichi;o__Erysipelotrichales;f__Erysipelotrichaceae;g__Clostridium
+1029	0	0	0	0	0	0	0	0	2	0	k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae
+1034	0	0	0	0	0	0	0	0	0	0	k__Bacteria;p__Firmicutes;c__Clostridia;o__;f__Lachnospiraceae
+1035	0	5	0	5	5	0	5	0	0	0	k__

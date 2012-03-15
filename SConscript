@@ -30,8 +30,13 @@ lFileInputFiles = Glob( sfle.d( fileDirInput, "*" ) )
 lQiimeFiles = []
 for fileName in lFileInputFiles:
   strPathPieces = [filter(None,strPathPiece) for strPathPiece in (fileName.get_abspath().split(cExtDelim))]
-  if cExtDelim+strPathPieces[-1] == c_strSufQiime:
-    lQiimeFiles.append(fileName)
+  sExtension = cExtDelim+strPathPieces[-1]
+  if sExtension[0:len(c_strSufQiime)] == c_strSufQiime:
+    if(not "~" in sExtension):
+      lQiimeFiles.append(fileName)
+
+print("lQiimeFiles")
+print([s.get_abspath() for s in lQiimeFiles])
 
 #Call program with an input and output file parameter
 def funcDo( target, source, env ):
