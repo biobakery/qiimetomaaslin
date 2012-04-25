@@ -9,7 +9,7 @@ c_strSufPCL		= ".pcl"
 c_strSufR		= ".R"
 c_strSufQiime		= ".qiime"
 c_strSufOTU		= ".otu"
-c_strSufAbnd		= ".abnd"
+c_strSufMetadata	= ".metadata"
 
 #Delims
 cPathDelim = "/"
@@ -18,8 +18,7 @@ cExtDelim = "."
 #Scripts
 #Renames the otus with the ancestry so that clades can be later summed.
 progRenameOTUs = sfle.d( fileDirSrc, "qiime2otus.py")
-progSumClades = sfle.d( fileDirSrc, "otus2abnd.py")
-progNormalize = sfle.d( fileDirSrc, "abnd2pcl.py")
+progSumAndNormalize = sfle.d( fileDirSrc, "merge_metadata.py" )
 
 pE = DefaultEnvironment( )
 
@@ -35,14 +34,23 @@ for fileName in lFileInputFiles:
     if(not "~" in sExtension):
       lQiimeFiles.append(fileName)
 
-print("lQiimeFiles")
-print([s.get_abspath() for s in lQiimeFiles])
-
 #Call program with an input and output file parameter
-def funcDo( target, source, env ):
-	strT, astrSs = sfle.ts( target, source )
-	strProg, strInputFile = astrSs[0], astrSs[1]
-	return sfle.ex([strProg, strInputFile, strT])
+def funcFormat( target, source, env ):
+  strT, astrSs = sfle.ts( target, source )
+  strProg, strInputFile = astrSs[0], astrSs[1]
+  return sfle.ex([strProg, strInputFile, strT])
+
+def funcSumNormalize( target, source, env ):
+  print("funcSumNormalize")
+  strT, astrSs = sfle.ts( target, source )
+  strProg, strInputFile = astrSs[0], astrSs[1]
+  return sfle.ex([strProg, "-m","0.0","-t","-1","-i", strInputFile, ">", strT])
+
+def funcSumNormalizeAndAddMetada( target, source, env ):
+  print("funcSumNormalizeAndAddMetadata")
+  strT, astrSs = sfle.ts( target, source )
+  strProg, strInputFile, strMetadataFile = astrSs[0], astrSs[1], astrSs[2]
+  return sfle.ex([strProg, "-m","0.0","-t","-1","-i", strInputFile, strMetadataFile, ">", strT])
 
 #Put this into a pipeline
 #For each file, merge otu column (0) with qiime output ancestral lineage column (-1)
@@ -51,15 +59,15 @@ for fileQiime in lQiimeFiles:
   strInputBase = cExtDelim.join(strPathPieces[0:-1])
   strOutputBase = sfle.d(fileDirOutput,[filter(None,strOutputPiece) for strOutputPiece in strInputBase.split(cPathDelim)][-1])
   strUpdateNameOutputFile = File(strOutputBase+c_strSufOTU)
-  strCountCladeOutputFile = File(strOutputBase+c_strSufAbnd)
   strNormalizeOuputFile = File(strOutputBase+c_strSufPCL)
+  strPotentialMetadataFile = strInputBase+c_strSufMetadata
 
   #Merge the first and last column of Qiime output to have a full name with consensus lineage
-  Command( strUpdateNameOutputFile, [progRenameOTUs,fileQiime], funcDo )
+  Command( strUpdateNameOutputFile, [progRenameOTUs,fileQiime], funcFormat )
 
-  #Count clade abundances
-  Command( strCountCladeOutputFile, [progSumClades,strUpdateNameOutputFile], funcDo )
-
-  #Normalize clade abundances
-  Default(Command( strNormalizeOuputFile, [progNormalize,strCountCladeOutputFile], funcDo ))
-  
+  if(os.path.isfile(strPotentialMetadataFile)):
+    #Sum clades, normalize, and add metadata (normalize accounting accounting for heirarchical structure given)
+    Default( Command( strNormalizeOuputFile, [progSumAndNormalize,strUpdateNameOutputFile, File(strPotentialMetadataFile)], funcSumNormalizeAndAddMetada ) )
+  else:
+    #Sum clades and normalize (normalize accounting accounting for heirarchical structure given)
+    Default( Command( strNormalizeOuputFile, [progSumAndNormalize,strUpdateNameOutputFile], funcSumNormalize ) )
