@@ -28,7 +28,7 @@ Place your input qiime file with a valid extension (see above) into the input fo
 If you want to append a metadata matrix to the header of the abundance table place a file in the input directory with the same file name
 as the input qiime file but with the extension ".metadata". See test1.qiime and test1.metadata in the qiimetomaaslin input directory for examples.
 Move up two directory level to what should be a sfle folder.
-Type scons output/qiimetomaasline
+Type scons output/qiimetomaaslin
 The output should be in ...sfle/output/qiimetomaaslin
 
 
