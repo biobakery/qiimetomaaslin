@@ -31,12 +31,11 @@ Move up two directory level to what should be a sfle folder.
 Type scons output/qiimetomaaslin
 The output should be in ...sfle/output/qiimetomaaslin
 
-
 4. File formatting:
 
-1. Please use tab delimited files.
-2. qiime files should be as output from Qiime.
-3. Metadata files should have samples as rows and metadata as columns.
+A. Please use tab delimited files.
+B. qiime files should be as output from Qiime.
+C. Metadata files should have samples as rows and metadata as columns.
 
 
 5 Troubleshooting:
@@ -58,10 +57,9 @@ ImportError: No module named sfle:
   File "/home/user/sfle/SConstruct", line 2:
     import sfle
 
-Solution: You need to update your path. On a linux terminal in the sfle directory type the following.
+Temporary Solution: You need to update your path. On a linux terminal in the sfle directory type the following.
 
 export PATH=/usr/local/bin:`pwd`/src:$PATH
 export PYTHONPATH=$PATH
 
-
-
+Permanent Solution: In both Mac and Linux operating systems, the path can be placed in the .bash_profile or .bashrc file respectively. When doing this note that `pwd` is a command that should not be included in a permanent path definition. Instead substitute `pwd`/src with the absolute path to the sfle/src folder (can get this in the terminal by typing pwd in the sfle/src directory).
