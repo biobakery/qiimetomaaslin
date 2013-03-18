@@ -1,10 +1,10 @@
 """
 Author: Timothy Tickle
-Description: Class to test the RunMicroPITA class
+Description: Class to test the qiimeToMaaslin script
 """
 
 __author__ = "Timothy Tickle"
-__copyright__ = "Copyright 2011"
+__copyright__ = "Copyright 2013"
 __credits__ = ["Timothy Tickle"]
 __license__ = ""
 __version__ = ""
