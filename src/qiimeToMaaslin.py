@@ -74,126 +74,127 @@ Examples
 import argparse
 import blist
 import csv
+import os
 import re
 import sys
 
-c_dTarget	= 1.0
-c_fRound	= False
+c_dTarget = 1.0
+c_fRound = False
+
+c_strUnclassified = "unclassified"
+c_strOTUID = "#OTU ID"
+c_cOutputOTULineageDelim = "|"
+c_strOutputDelimiter ="\t"
 
 class CClade:
 	
-        #Initialize CCClade
-        #Dictionary to hold children nodes in tree
-        #adValues is a list of the abundance values from the samples
-	def __init__( self ):
-		
-		self.m_hashChildren = {}
-		self.m_adValues = None
+  #Initialize CCClade
+  #Dictionary to hold children nodes in tree
+  #adValues is a list of the abundance values from the samples
+  def __init__( self ):
+    self.m_hashChildren = {}
+    self.m_adValues = None
 	
-        #Recursively travel the length of a tree until you find the terminal node
-        #(where astrClade == Falseor actually [])
-        #or a dict key that matches the clade call.
-        #If at any time a clade is given that is not currently know, return a new clade
-        #which is set to the current Clade as a child.
-	def get( self, astrClade ):
+  #Recursively travel the length of a tree until you find the terminal node
+  #(where astrClade == False or actually [])
+  #or a dict key that matches the clade call.
+  #If at any time a clade is given that is not currently know, return a new clade
+  #which is set to the current Clade as a child.
+  def get( self, astrClade ):
 		
-		return self.m_hashChildren.setdefault(
-			astrClade[0], CClade( ) ).get( astrClade[1:] ) if astrClade else self
+    return self.m_hashChildren.setdefault(
+      astrClade[0], CClade( ) ).get( astrClade[1:] ) if astrClade else self
 
-        #Set all the values given as a list in the same order given
-	def set( self, adValues ):
+  #Set all the values given as a list in the same order given
+  def set( self, adValues ):
 		
-		self.m_adValues = blist.blist( [0] ) * len( adValues )
-		for i, d in enumerate( adValues ):
-			if d:
-				self.m_adValues[i] = d
+    self.m_adValues = blist.blist( [0] ) * len( adValues )
+    for i, d in enumerate( adValues ):
+      if d:
+        self.m_adValues[i] = d
 
-        #This allows you to recursively impute values for clades without values given their children counts.
-        #Assumably this should be called only once and after all clade abundances have been added.
-        #If the m_adValues already exist return the stored m_adValues. (No imputation needed).
-        #Otherwise call impute for all children and take the sum of the values from all the children by column
-        #Not a sum of a list but summing a list with lists by element.
-	def impute( self ):
-		
-                #If values do not exist
-		if not self.m_adValues:
-                        #Call impute on all children
-                        #If the parent clade has no abundance values
-                        #Then take a copy of the child's
-                        #If they now have a copy of a child's but have other children
-                        #Sum their children with thier current values
-			for pChild in self.m_hashChildren.values( ):
-				adChild = pChild.impute( )
-				if self.m_adValues:
-					for i in range( len( adChild or [] ) ):
-						if adChild[i]:
-							self.m_adValues[i] += adChild[i]
-				elif adChild:
-					self.m_adValues = adChild[:] 
-		#If values exist return			
-		return self.m_adValues
-	
-        #Update the given hashValues dict with clade abudances given depth specifications
-        #Return a set of integers returning an indicator of the structure of the tree preserved in the dict/hash
-        #When the appropriate level of the tree is reached
-        #Hashvalue is updated with the clade (including lineage) and the abundance. looks like {"clade":blist(["0.0","0.1"...])}
-	def _freeze( self, hashValues, iTarget, astrClade, iDepth, fLeaves ):
-		
-                #fHit is true on atleast one of the following conditions:
-                #iTarget is not 0 indicating no changes
-                #Leaves are indicated to be only given and the target depth for the leaves is reached.
-                #The required depth is reached.
-		fHit = ( not iTarget ) or ( ( fLeaves and ( iDepth == iTarget ) ) or ( ( not fLeaves ) and ( iDepth <= iTarget ) ) )
-                #Increment depth
-		iDepth += 1
-                #Returns a set
-		setiRet = set()
-                #If there are children build integer set indicating structure of the tree preserved in the dict
-		if self.m_hashChildren:
-                        #Union all the results from freeze of all children
-                        #Call freeze but append the child clade to the clade in the call.
-                        #And give an incremented depth
-			for strChild, pChild in self.m_hashChildren.items( ):
-				setiRet |= pChild._freeze( hashValues, iTarget, astrClade + [strChild], iDepth, fLeaves )
-			setiRet = set( ( i + 1 ) for i in setiRet )
-		else:
-			setiRet.add( 0 )
-                #Indicate if the correct level is reached
-		if iTarget < 0:
-			if fLeaves:
-				fHit = -( iTarget + 1 ) in setiRet
-			else:
-				fHit = -( iTarget + 1 ) <= max( setiRet )
-                #if astrClade is not == [] (so you are actually in a clade of the tree)
-                #And the clade has values (should be true, if not impute should have been callded before running this method)
-                #And we are at the correct level of the tree then
-                #Add to the dict the clade and the abundance values
-		if astrClade and self.m_adValues and fHit:
-			hashValues["|".join( astrClade )] = self.m_adValues
-		return setiRet
-	
-        #Call helper function setting the clade and depth to defaults (start positions)
-        #The important result of this method is hashValues is updated with clade and abundance information
-	def freeze( self, hashValues, iTarget, fLeaves ):
-		
-		self._freeze( hashValues, iTarget, [], 0, fLeaves )
-	
-        #Represent tree clade for debugging
-	def _repr( self, strClade ):
+  #This allows you to recursively impute values for clades without values given their children counts.
+  #Assumably this should be called only once and after all clade abundances have been added.
+  #If the m_adValues already exist return the stored m_adValues. (No imputation needed).
+  #Otherwise call impute for all children and take the sum of the values from all the children by column
+  #Not a sum of a list but summing a list with lists by element.
+  def impute( self ):
 
-		strRet = "<"
-		if strClade:
-			strRet += "%s %s" % (strClade, self.m_adValues)
-			if self.m_hashChildren:
-				strRet += " "
-		if self.m_hashChildren:
-			strRet += " ".join( p._repr( s ) for (s, p) in self.m_hashChildren.items( ) )
+    #If values do not exist
+    if not self.m_adValues:
+      #Call impute on all children
+      #If the parent clade has no abundance values
+      #Then take a copy of the child's
+      #If they now have a copy of a child's but have other children
+      #Sum their children with thier current values
+      for pChild in self.m_hashChildren.values( ):
+        adChild = pChild.impute( )
+        if self.m_adValues:
+          for i in range( len( adChild or [] ) ):
+            if adChild[i]:
+              self.m_adValues[i] += adChild[i]
+        elif adChild:
+          self.m_adValues = adChild[:] 
+    #If values exist return			
+    return self.m_adValues
+	
+  #Update the given hashValues dict with clade abudances given depth specifications
+  #Return a set of integers returning an indicator of the structure of the tree preserved in the dict/hash
+  #When the appropriate level of the tree is reached
+  #Hashvalue is updated with the clade (including lineage) and the abundance. looks like {"clade":blist(["0.0","0.1"...])}
+  def _freeze( self, hashValues, iTarget, astrClade, iDepth, fLeaves ):
 		
-		return ( strRet + ">" )
+    #fHit is true on atleast one of the following conditions:
+    #iTarget is not 0 indicating no changes
+    #Leaves are indicated to be only given and the target depth for the leaves is reached.
+    #The required depth is reached.
+    fHit = ( not iTarget ) or ( ( fLeaves and ( iDepth == iTarget ) ) or ( ( not fLeaves ) and ( iDepth <= iTarget ) ) )
+    #Increment depth
+    iDepth += 1
+    #Returns a set
+    setiRet = set()
+    #If there are children build integer set indicating structure of the tree preserved in the dict
+    if self.m_hashChildren:
+      #Union all the results from freeze of all children
+      #Call freeze but append the child clade to the clade in the call.
+      #And give an incremented depth
+      for strChild, pChild in self.m_hashChildren.items( ):
+        setiRet |= pChild._freeze( hashValues, iTarget, astrClade + [strChild], iDepth, fLeaves )
+      setiRet = set( ( i + 1 ) for i in setiRet )
+    else:
+      setiRet.add( 0 )
+    #Indicate if the correct level is reached
+    if iTarget < 0:
+      if fLeaves:
+        fHit = -( iTarget + 1 ) in setiRet
+      else:
+        fHit = -( iTarget + 1 ) <= max( setiRet )
+    #if astrClade is not == [] (so you are actually in a clade of the tree)
+    #And the clade has values (should be true, if not impute should have been callded before running this method)
+    #And we are at the correct level of the tree then
+    #Add to the dict the clade and the abundance values
+    if astrClade and self.m_adValues and fHit:
+      hashValues[c_cOutputOTULineageDelim.join( astrClade )] = self.m_adValues
+    return setiRet
+	
+  #Call helper function setting the clade and depth to defaults (start positions)
+  #The important result of this method is hashValues is updated with clade and abundance information
+  def freeze( self, hashValues, iTarget, fLeaves ):
+    self._freeze( hashValues, iTarget, [], 0, fLeaves )
+	
+  #Represent tree clade for debugging
+  def _repr( self, strClade ):
+    strRet = "<"
+    if strClade:
+      strRet += "%s %s" % (strClade, self.m_adValues)
+      if self.m_hashChildren:
+        strRet += " "
+    if self.m_hashChildren:
+      strRet += " ".join( p._repr( s ) for (s, p) in self.m_hashChildren.items( ) )
+    return ( strRet + ">" )
 		
-	def __repr__( self ):
-		
-		return self._repr( "" )
+  def __repr__( self ):
+    return self._repr( "" )
 
 """
 pTree = CClade( )
@@ -209,6 +210,129 @@ print( pTree )
 print( hashFeatures )
 sys.exit( 0 )
 #"""
+
+def funcDetectFormat(strFormatInQuestion):
+  """ Detects which format to use for the strFormatInQuestion
+
+      :param strFormatInQuestion: The consensus string to format
+      :type strFormatInQuestion: String
+  """
+
+  # Given a string, a function is returned that will parse it or an error is given.
+  lFormats = [[r'^k__(\w)+;\w',qiimeFormat1],[r'^Root',qiimeFormat2],
+              [r'^k__(\w)+; ',qiimeFormat3],[r'[^;]',funcPass]]
+
+  for strFormat,funcFormat in lFormats:
+    if not re.match(strFormat, strFormatInQuestion) is None:
+      return funcFormat
+  return None
+
+#Qiime Format 1
+def qiimeFormat1(strConsensusLineage):
+  """ Handles formatting matching k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae
+
+      :param strConsensusLineage: The conensus lineage to format
+      :type strConsensusLineage: String
+  """
+
+  #Format consensus lineage
+  #Remove root
+  strConsensusLineage = re.sub(r'^k__$',"k__"+c_strUnclassified,strConsensusLineage)
+  #Change no end clade to unclassified
+  strConsensusLineage = re.sub(r'__$',"__"+c_strUnclassified,strConsensusLineage)
+  #Update Internal unclassified
+  strConsensusLineage = re.sub(r'__;',"__"+c_strUnclassified+";",strConsensusLineage)
+  #Remove root
+  strConsensusLineage = re.sub(r';', c_cOutputOTULineageDelim,strConsensusLineage)
+  return strConsensusLineage
+
+#Qiime Format 2
+def qiimeFormat2(strConsensusLineage):
+  """ Handles formatting matching Root;k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae
+
+      :param strConsensusLineage: The conensus lineage to format
+      :type strConsensusLineage: String
+  """
+
+  #Format consensus lineage
+  #Remove rootby itself, make it unclassified as a root
+  strConsensusLineage = re.sub(r'^Root$',c_strUnclassified,strConsensusLineage)
+  #Remove root
+  strConsensusLineage = re.sub(r'^Root;',"",strConsensusLineage)
+  #Change no end clade to unclassified
+  strConsensusLineage = re.sub(r'__$',"__"+c_strUnclassified,strConsensusLineage)
+  #Update Internal unclassified
+  strConsensusLineage = re.sub(r'__;',"__"+c_strUnclassified+";",strConsensusLineage)
+  #Change otu delimiters
+  strConsensusLineage = re.sub(r';',c_cOutputOTULineageDelim,strConsensusLineage)
+  return strConsensusLineage
+
+#Qiime Format 3
+def qiimeFormat3(strConsensusLineage):
+  """ Handles formatting matching k__Bacteria; p__Tenericutes; c__Mollicutes; o__RF39
+
+      :param strConsensusLineage: The conensus lineage to format
+      :type strConsensusLineage: String
+  """
+
+  #Format consensus lineage
+  #Standardize unclassifieds
+  strConsensusLineage = re.sub(r'__;',"__"+c_strUnclassified+";",strConsensusLineage)
+  #Change no end clade to unclassified
+  strConsensusLineage = re.sub(r'__$',"__"+c_strUnclassified,strConsensusLineage)
+  #Update Internal unclassified
+  strConsensusLineage = re.sub(r'__; ',"__"+c_strUnclassified+"; ",strConsensusLineage)
+  #Replace delimiter
+  strConsensusLineage = re.sub(r'; ',c_cOutputOTULineageDelim,strConsensusLineage)
+  return strConsensusLineage
+
+def funcPass(strConsensusLineage):
+  """ If no formatting is needed use this function (for instance if no clade level is given k__Bacteria)
+
+      :param strConsensusLineage: The conensus lineage to format (or not format in this case)
+      :type strConsensusLineage: String
+  """
+  return strConsensusLineage
+
+def funcFormatInput(strmInputFile):
+  """ Formats the Qiime Table and returns the metadata (dict) and data (list of lists)
+
+      :param strmInputFile: Input file stream
+      :type strmInputFile: String
+  """
+
+  #Lines of data to output
+  lstrOutputlines = []
+
+  fDetectFormatter = True
+  funcFormatter = None
+  #Read through tab delimited qiime output
+  for astrLine in strmInputFile:
+    #Keep the sample header
+    if astrLine[0][0] == c_strOTUID[0]:
+      if astrLine[0][0:len(c_strOTUID)] == c_strOTUID:
+        lstrOutputlines.append(astrLine[:-1])
+    else:
+      #Get otu and data
+      strOTU, astrData, strConsensusLineage = astrLine[0], astrLine[1:-1], astrLine[-1]
+
+      #Get formatter
+      if fDetectFormatter:
+        funcFormatter = funcDetectFormat(strConsensusLineage)
+        if funcFormatter.__name__ != "funcPass":
+          fDetectFormatter = False
+
+      #Format consensus lineage
+      strConsensusLineage = funcFormatter(strConsensusLineage)
+
+      #Combine with qiime consensus lineages
+      lstrOutputlines.append([c_strOutputDelimiter.join([c_cOutputOTULineageDelim.join([strConsensusLineage,strOTU])])]+astrData)
+
+  if fDetectFormatter:
+    print("qiimeToMaAsLin did not detect a specific format for your file, this could be due to using a new consensus lineage format, improper formatting, or having consensus lineages with no heirarchical relationship (if not using a heirarchical relationship, you may ignore this message). Please check your output file formatting and the read me for supported formats. If this is a standard format and needs to be supported please let us know!")
+
+  #Return list of formatted otu and data
+  return(lstrOutputlines)
 
 def merge_metadata( aastrMetadata, aastrData, ostm, fNormalize, strMissing, astrExclude, dMin, iTaxa, fLeaves ):
 	"""
@@ -373,7 +497,7 @@ def merge_metadata( aastrMetadata, aastrData, ostm, fNormalize, strMissing, astr
 					astrLine[0] = astrLine[1]
 				else:
 					astrLine[0] += " " + astrLine[1]
-			pTree.get( astrLine[0].split( "|" ) ).set( adCounts )
+			pTree.get( astrLine[0].split( c_cOutputOTULineageDelim ) ).set( adCounts )
                 #There are 2 formats one can have depending on "NAME" location
                 #Set the column header index
 		else:
@@ -414,10 +538,10 @@ def merge_metadata( aastrMetadata, aastrData, ostm, fNormalize, strMissing, astr
 				if c_fRound:
 					adCounts[i] = round( adCounts[i] )
 	for strFeature, adCounts in hashFeatures.items( ):
-		astrFeature = strFeature.strip( ).split( "|" )
+		astrFeature = strFeature.strip( ).split( c_cOutputOTULineageDelim )
 		while len( astrFeature ) > 1:
 			astrFeature = astrFeature[:-1]
-			strParent = "|".join( astrFeature )
+			strParent = c_cOutputOTULineageDelim.join( astrFeature )
 			adParent = hashFeatures.get( strParent )
 			if adParent == adCounts:
 				del hashFeatures[strParent]
@@ -458,19 +582,19 @@ def merge_metadata( aastrMetadata, aastrData, ostm, fNormalize, strMissing, astr
 	for astrRaw in aastrRaw:
 		csvw.writerow( [astrRaw[i] for i in aiHeaders] )
 
-argp = argparse.ArgumentParser( prog = "merge_metadata.py",
-	description = "Join a data matrix with a metadata matrix, optionally normalizing and filtering it.\n\n" +
+argp = argparse.ArgumentParser( prog = "qiimeToMaaslin.py",
+	description = "Join a qiime otu table with a metadata matrix, optionally normalizing and filtering it.\n\n" +
 	"A pipe-delimited taxonomy hierarchy can also be dynamically added or removed." )
 argp.add_argument( "-i",		dest = "iDataFile",	metavar = "data.otus",
 	type = file,
-	help = "Output file from qiime2otus.py which holds metadata and then data to be changed into a pcl file." )
+	help = "Qiime OTU table." )
 argp.add_argument( "-n",		dest = "fNormalize",	action = "store_false",
 	help = "Don't normalize data values by column sums" )
 argp.add_argument( "-s",		dest = "strMissing",	metavar = "missing",
 	type = str,		default = " ",
 	help = "String representing missing metadata values" )
 argp.add_argument( "-m",		dest = "dMin",			metavar = "min",
-	type = float,	default = 0.01,
+	type = float,	default = 0.00,
 	help = "Per-column quality control, minimum fraction of maximum value" )
 argp.add_argument( "-t",		dest = "iTaxa",			metavar = "taxa",
 	type = int,		default = -1,
@@ -486,11 +610,16 @@ argp.add_argument( "istmMetadata",	metavar = "metadata.txt",
 __doc__ = "::\n\n\t" + argp.format_help( ).replace( "\n", "\n\t" ) + __doc__
 
 def _main( ):
-	args = argp.parse_args( )
-        args.fNormalize = True
-	merge_metadata( args.istmMetadata and csv.reader( args.istmMetadata, csv.excel_tab ),
-		csv.reader( args.iDataFile, csv.excel_tab ), sys.stdout, args.fNormalize, args.strMissing,
-			args.istmExclude, args.dMin, args.iTaxa, args.fLeaves )
+  # Read Arguments
+  args = argp.parse_args( )
+
+  # Format input
+  lstrExtractedData = funcFormatInput(csv.reader( sys.stdin, csv.excel_tab ))
+
+  # Merge the metadata, optionally summing and normalizing
+  merge_metadata( args.istmMetadata and csv.reader( args.istmMetadata, csv.excel_tab ),
+    lstrExtractedData, sys.stdout, args.fNormalize, args.strMissing,
+    args.istmExclude, args.dMin, args.iTaxa, args.fLeaves )
 	
 if __name__ == "__main__":
 	_main( )

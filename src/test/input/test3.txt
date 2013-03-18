@@ -1,0 +1,11 @@
+#Full OTU Counts								
+#OTU ID	E2005150	E2005180.1	E2005180.2	E2005250.1	E2005250.2	E2005260.1	E2005260.2	Consensus Lineage
+1	17	1	0	7	0	0	0	k__Bacteria; p__Tenericutes; c__Mollicutes; o__RF39; f__
+10	5	0	0	0	0	0	0	k__Bacteria; p__Firmicutes; c__Clostridia; o__; f__Catabacteriaceae
+100	3	3	145	23	0	20	1	k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Lachnospiraceae
+100	3	3	145	23	0	20	1	k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Lachnospiraceae; g__; s__
+1000	0	0	0	12	0	26	0	k__Bacteria; p__Tenericutes; c__Mollicutes; o__RF39; f__
+1001	0	0	0	0	0	0	7	k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Prevotellaceae
+1002	0	0	0	0	0	2	0	k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Porphyromonadaceae
+1003	0	0	0	0	0	0	4	k__Bacteria
+10023	1	2	3	0	4	0	4	k__

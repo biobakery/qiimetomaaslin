@@ -1,57 +1,57 @@
-1 Description:
+I. Description:
 
-QiimeToMaAsLin supports transforming a Qiime OTU table into the abundance section of a MaAsLin .pcl file.
-The bitbucket project sfle needs to be installed to run QiimeToMaaslin as an automated project.
-QiimeToMaaslin should be placed in .../sfle/input
+QiimeToMaAsLin supports transforming a Qiime OTU table into a MaAsLin .pcl file. This script can be ran as a seperate script or as a sfle project.
+
+If running as a sfle project, the bitbucket project sfle needs to be installed to run QiimeToMaaslin as an automated project. As well, in this case, QiimeToMaaslin should be placed in .../sfle/input. When ran as a script, the script can be placed anywhere; placing the script in your path may be optimal.
 
 QiimeToMaAsLin is intended to perform the following operations:
-1. Combine the OTU name with the consensus lineage
+1. Combine the OTU name with the consensus lineage and standardize the name.
 2. Add all clade levels (which do not have identical abundance thier children node) and sum each clade level
 3. Normalize the sample by dividing each clade/OTU by the total sum of the sample abundances at that given clade level.
-4. Optionally a metadata matrix can be added to the abudnance file.
+4. Optionally a metadata matrix can be added to the abundance file.
 
 
-2 Supported formats from Qiime:
+II. Supported formats from Qiime:
 
-Several formats of Qiime Consensus lineages are supported with QiimeToMaAsLin.
-Different formats are indicated by extension numbering.
-Examples of test files should be provided in the downloading of QiimeToMaAsLin
-Below is a key to the extensions needed for formating:
-Extension	Format Example
-.qiime		k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae
-.qiime2		Root;k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae
+Several formats of Qiime Consensus lineages are supported with QiimeToMaAsLin. More may be added as new standards evolve.
+
+1. k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae
+2. Root;k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae
+3. k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Lachnospiraceae
 
 
-3 To Run:
+III. To Run:
 
-Place your input qiime file with a valid extension (see above) into the input folder of qiimetomaasline.
-If you want to append a metadata matrix to the header of the abundance table place a file in the input directory with the same file name
+1. As a script
+On a terminal in the directory you have the qiimeToMaaslin.py script (or anywhere if you have the script in your path) type the following
+python qiimeToMaaslin.py metadatafile.metadata < inputfile.txt > outputfile.pcl
+
+python qiimeToMaaslin.py: Calls the script
+metadatafile.metadata: metadata file to combine with the Qiime file; optional and does not need to be written if not requesting this option
+inputfile.txt: path location to your input file
+outputfile.pcl: path location to where your output file should go
+
+
+2. As a sfle project
+
+Place your input qiime file with a valid extension (.txt or .qiime) into the input folder of qiimetomaaslin.
+If you want to append a metadata matrix, place a file in the input directory with the same file name
 as the input qiime file but with the extension ".metadata". See test1.qiime and test1.metadata in the qiimetomaaslin input directory for examples.
 Move up two directory level to what should be a sfle folder.
 Type scons output/qiimetomaaslin
 The output should be in ...sfle/output/qiimetomaaslin
 
-4. File formatting:
 
-A. Please use tab delimited files.
-B. qiime files should be as output from Qiime.
-C. Metadata files should have samples as rows and metadata as columns.
+IV. File formatting:
 
-
-5 Troubleshooting:
-
-A. The following error is due to none visible foramatting in the file (in this case a txt file from Excel in the Mac Office suite).
-Traceback (most recent call last):
-  File "/home/ttickle/Desktop/ttickle/sfle/input/qiimetomaaslin/src/qiime2otus.py", line 86, in <module>
-    for astrLine in csv.reader( open(strInputQiime), csv.excel_tab ):
-_csv.Error: new-line character seen in unquoted field - do you need to open the file in universal-newline mode?
-
-To correct:
-Run the following command in a terminal to remove the nonvisible characters and use the new generated file.
-strings inputfile.qiime > outputfile.qiime
+1. Please use tab delimited files.
+2. qiime files should be as output from Qiime.
+3. Metadata files should have samples as rows and metadata as columns (see example in input file).
 
 
-B. When using the command "scons output/qiimetomaaslin/" I get the message:
+V. Troubleshooting:
+
+1. When using the command "scons output/qiimetomaaslin/" I get the message:
 
 ImportError: No module named sfle:
   File "/home/user/sfle/SConstruct", line 2:

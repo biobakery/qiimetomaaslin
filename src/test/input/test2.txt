@@ -1,5 +1,5 @@
 #Full OTU Counts								
-#OTU ID	CC01.2A	CC01.2B	CC02.1A	CC02.1B	CC02.2A	CC06.2B	CD15.1A	Consensus Lineage
+#OTU ID	E2005150	E2005180.1	E2005180.2	E2005250.1	E2005250.2	E2005260.1	E2005260.2	Consensus Lineage
 1	17	1	0	7	0	0	0	Root;k__Bacteria;p__Tenericutes;c__Mollicutes;o__RF39;f__
 10	5	0	0	0	0	0	0	Root;k__Bacteria;p__Firmicutes;c__Clostridia;o__;f__Catabacteriaceae
 100	3	3	145	23	0	20	1	Root;k__Bacteria;p__Firmicutes;c__Clostridia;o__Clostridiales;f__Lachnospiraceae
