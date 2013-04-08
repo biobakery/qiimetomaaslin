@@ -206,8 +206,6 @@ if iTaxa:
 	pTree.impute( )
 hashFeatures = {}
 pTree.freeze( hashFeatures, iTaxa )
-print( pTree )
-print( hashFeatures )
 sys.exit( 0 )
 #"""
 
@@ -585,9 +583,6 @@ def merge_metadata( aastrMetadata, aastrData, ostm, fNormalize, strMissing, astr
 argp = argparse.ArgumentParser( prog = "qiimeToMaaslin.py",
 	description = "Join a qiime otu table with a metadata matrix, optionally normalizing and filtering it.\n\n" +
 	"A pipe-delimited taxonomy hierarchy can also be dynamically added or removed." )
-argp.add_argument( "-i",		dest = "iDataFile",	metavar = "data.otus",
-	type = file,
-	help = "Qiime OTU table." )
 argp.add_argument( "-n",		dest = "fNormalize",	action = "store_false",
 	help = "Don't normalize data values by column sums" )
 argp.add_argument( "-s",		dest = "strMissing",	metavar = "missing",
