@@ -10,7 +10,7 @@ QiimeToMaAsLin is intended to perform the following operations:
 3. Normalize the sample by dividing each clade/OTU by the total sum of the sample abundances at that given clade level.
 4. Optionally a metadata matrix can be added to the abundance file.
 
-##### Please note QiimeToMaAsLin has a dependency that will need to be installed, blist (a python library). Please visit https://pypi.python.org/pypi/blist/ for details.
+##### Please note QiimeToMaAsLin has a dependency that will need to be installed, blist (a python library). Please visit https://pypi.python.org/pypi/blist for details.
 
 II. Supported formats from Qiime:
 
