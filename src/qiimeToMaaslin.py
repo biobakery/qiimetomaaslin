@@ -81,7 +81,7 @@ import sys
 c_dTarget = 1.0
 c_fRound = False
 c_strUnclassified = "unclassified"
-c_strOTUID = "# OTU ID"
+c_strOTUID = "#OTU ID"
 c_cOutputOTULineageDelim = "|"
 c_strOutputDelimiter = "\t"
 
